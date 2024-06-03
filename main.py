@@ -1,35 +1,36 @@
-# Import necessary modules
 import socket
+import threading
 
-TARGET_HOST = "www.ozangokberk.com"
-TARGET_PORT = 80
+# Define the proxy server class
+class ProxyServer:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    def start(self):
+        print("Proxy server is starting...")
+        try:
+            self.server_socket.bind((self.host, self.port))
+            self.server_socket.listen(5)
+            print(f"Proxy server is listening on {self.host}:{self.port}")
+            while True:
+                client_socket, client_address = self.server_socket.accept()
+                print(f"Received connection from {client_address}")
+                # Start a new thread to handle the client connection
+                threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+        except Exception as e:
+            print(f"Error: {e}")
 
-def start_proxy_server(host, port):
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4 & TCP
-    server_socket.bind((host, port))
-    server_socket.listen(5)
-    print(f"Proxy server running on {host}:{port}")
-    
-    while True:
-        client_socket, addr = server_socket.accept()
-        print(f"Connection from {addr}")
-        
-        request = client_socket.recv(1024).decode()
-        print("Received request:")
-        print(request)
-        
-        target_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        target_socket.connect((TARGET_HOST, TARGET_PORT))
-        target_socket.sendall(request.encode())
-        
-        response = target_socket.recv(4096)
-        print("Received response:")
-        print(response.decode())
-        
-        
-        
-        client_socket.close()
-        target_socket.close()
-        
-start_proxy_server('localhost', 4500)
+    def handle_client(self, client_socket):
+        # Implement logic to handle client requests
+        pass
+
+if __name__ == "__main__":
+    # Define proxy server settings
+    HOST = '127.0.0.1'
+    PORT = 8080
+
+    # Create and start the proxy server
+    proxy_server = ProxyServer(HOST, PORT)
+    proxy_server.start()
